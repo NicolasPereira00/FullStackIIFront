@@ -4,6 +4,8 @@ import {
   adminCreateProduct, adminGetProduct, adminUpdateProduct,
   adminAddVariant, adminUpdateVariant, adminRemoveVariant
 } from '../../api/products.admin';
+import { listBrands } from '../../api/brands';
+import { listCategories } from '../../api/categories';
 import ImagesPanel from './ImagesPanel';
 
 export default function AdminProductForm() {
@@ -12,11 +14,25 @@ export default function AdminProductForm() {
   const nav = useNavigate();
 
   const [form, setForm] = useState({ name:'', description:'', price:0 });
+  const [brandId, setBrandId] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [brands, setBrands] = useState([]);
+  const [categories, setCategories] = useState([]);
+
   const [variants, setVariants] = useState([]);
   const [vForm, setVForm] = useState({ size:'', color:'', stock:0 });
+
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(!!isEdit);
+
+  useEffect(() => {
+    (async () => {
+      const [bs, cs] = await Promise.all([listBrands(), listCategories()]);
+      setBrands(bs || []);
+      setCategories(cs || []);
+    })();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -26,6 +42,8 @@ export default function AdminProductForm() {
         setErr('');
         const p = await adminGetProduct(id);
         setForm({ name:p.name||'', description:p.description||'', price:Number(p.price||0) });
+        setBrandId(p.brandId || '');
+        setCategoryId(p.categoryId || '');
         setVariants(p.variants || []);
       } catch (e) {
         setErr(e?.response?.data?.error || 'Falha ao carregar produto.');
@@ -41,10 +59,16 @@ export default function AdminProductForm() {
       setMsg('');
       setErr('');
       if(!form.name) throw new Error('Nome é obrigatório.');
+      const payload = {
+        ...form,
+        price: Number(form.price),
+        brandId: brandId ? Number(brandId) : null,
+        categoryId: categoryId ? Number(categoryId) : null
+      };
       if(isEdit) {
-        await adminUpdateProduct(id, { ...form, price: Number(form.price) });
+        await adminUpdateProduct(id, payload);
       } else {
-        const created = await adminCreateProduct({ ...form, price: Number(form.price) });
+        const created = await adminCreateProduct(payload);
         return nav(`/admin/products/${created.id}`);
       }
       setMsg('Salvo com sucesso!');
@@ -94,10 +118,20 @@ export default function AdminProductForm() {
     <div style={{padding:16, display:'grid', gap:16}}>
       <h2>{isEdit ? 'Editar' : 'Novo'} Produto</h2>
 
-      <form onSubmit={save} style={{display:'grid', gap:8, maxWidth:520}}>
+      <form onSubmit={save} style={{display:'grid', gap:8, maxWidth:620}}>
         <input placeholder="Nome" value={form.name} onChange={e=>setForm({...form, name:e.target.value})}/>
         <textarea placeholder="Descrição" value={form.description} onChange={e=>setForm({...form, description:e.target.value})}/>
         <input type="number" step="0.01" placeholder="Preço" value={form.price} onChange={e=>setForm({...form, price:e.target.value})}/>
+        <div style={{display:'flex', gap:8}}>
+          <select value={brandId} onChange={e=>setBrandId(e.target.value)} style={{flex:1}}>
+            <option value="">Marca</option>
+            {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+          <select value={categoryId} onChange={e=>setCategoryId(e.target.value)} style={{flex:1}}>
+            <option value="">Categoria</option>
+            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </div>
         <div style={{display:'flex', gap:8}}>
           <button>Salvar</button>
           <button type="button" onClick={()=>nav('/admin/products')}>Voltar</button>

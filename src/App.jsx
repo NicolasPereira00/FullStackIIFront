@@ -11,6 +11,10 @@ import AdminProductsPage from './pages/admin/AdminProductsPage';
 import AdminProductForm from './pages/admin/AdminProductForm';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage';
 import AdminOrderDetail from './pages/admin/AdminOrderDetail';
+import ProfilePage from './pages/ProfilePage';
+import AdminBrandsPage from './pages/admin/AdminBrandsPage';
+import AdminCategoriesPage from './pages/admin/AdminCategoriesPage';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function Protected({ children }) {
   const { user } = useAuth();
@@ -48,13 +52,16 @@ function Navbar() {
         <>
           <Link to="/admin/products">Admin</Link>
           <Link to="/admin/orders">Pedidos</Link>
+          <Link to="/admin/brands">Marcas</Link>
+          <Link to="/admin/categories">Categorias</Link>
         </>
       )}
 
-      <div style={{ marginLeft: 'auto' }}>
+      <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+        {user && <Link to="/profile">Perfil</Link>}
         {user ? (
           <>
-            <span style={{ marginRight: 8 }}>
+            <span>
               Olá, {user.name || user.email} ({user.role})
             </span>
             <button onClick={logout}>Sair</button>
@@ -72,88 +79,119 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Navigate to="/products" replace />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/products/:id" element={<ProductDetailPage />} />
-          <Route
-            path="/cart"
-            element={
-              <Protected>
-                <CartPage />
-              </Protected>
-            }
-          />
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<Navigate to="/products" replace />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/products/:id" element={<ProductDetailPage />} />
+            <Route
+              path="/cart"
+              element={
+                <Protected>
+                  <CartPage />
+                </Protected>
+              }
+            />
 
-          <Route
-            path="/orders"
-            element={
-              <CustomerOnly>
-                <OrdersPage />
-              </CustomerOnly>
-            }
-          />
-          <Route
-            path="/orders/:id"
-            element={
-              <CustomerOnly>
-                <OrderDetailPage />
-              </CustomerOnly>
-            }
-          />
-          <Route
-            path="/addresses"
-            element={
-              <CustomerOnly>
-                <AddressesPage />
-              </CustomerOnly>
-            }
-          />
+            {/* Cliente */}
+            <Route
+              path="/orders"
+              element={
+                <CustomerOnly>
+                  <OrdersPage />
+                </CustomerOnly>
+              }
+            />
+            <Route
+              path="/orders/:id"
+              element={
+                <CustomerOnly>
+                  <OrderDetailPage />
+                </CustomerOnly>
+              }
+            />
+            <Route
+              path="/addresses"
+              element={
+                <CustomerOnly>
+                  <AddressesPage />
+                </CustomerOnly>
+              }
+            />
 
-          <Route
-            path="/admin/products"
-            element={
-              <SellerOnly>
-                <AdminProductsPage />
-              </SellerOnly>
-            }
-          />
-          <Route
-            path="/admin/products/new"
-            element={
-              <SellerOnly>
-                <AdminProductForm />
-              </SellerOnly>
-            }
-          />
-          <Route
-            path="/admin/products/:id"
-            element={
-              <SellerOnly>
-                <AdminProductForm />
-              </SellerOnly>
-            }
-          />
-          <Route
-            path="/admin/orders"
-            element={
-              <SellerOnly>
-                <AdminOrdersPage />
-              </SellerOnly>
-            }
-          />
-          <Route
-            path="/admin/orders/:id"
-            element={
-              <SellerOnly>
-                <AdminOrderDetail />
-              </SellerOnly>
-            }
-          />
+            {/* Admin / Seller */}
+            <Route
+              path="/admin/products"
+              element={
+                <SellerOnly>
+                  <AdminProductsPage />
+                </SellerOnly>
+              }
+            />
+            <Route
+              path="/admin/products/new"
+              element={
+                <SellerOnly>
+                  <AdminProductForm />
+                </SellerOnly>
+              }
+            />
+            <Route
+              path="/admin/products/:id"
+              element={
+                <SellerOnly>
+                  <AdminProductForm />
+                </SellerOnly>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <SellerOnly>
+                  <AdminOrdersPage />
+                </SellerOnly>
+              }
+            />
+            <Route
+              path="/admin/orders/:id"
+              element={
+                <SellerOnly>
+                  <AdminOrderDetail />
+                </SellerOnly>
+              }
+            />
+            <Route
+              path="/admin/brands"
+              element={
+                <SellerOnly>
+                  <AdminBrandsPage />
+                </SellerOnly>
+              }
+            />
+            <Route
+              path="/admin/categories"
+              element={
+                <SellerOnly>
+                  <AdminCategoriesPage />
+                </SellerOnly>
+              }
+            />
 
-          <Route path="*" element={<div style={{ padding: 24 }}>404</div>} />
-        </Routes>
+            {/* Perfil */}
+            <Route
+              path="/profile"
+              element={
+                <Protected>
+                  <ProfilePage />
+                </Protected>
+              }
+            />
+
+            {/* 404 */}
+            <Route path="*" element={<div style={{ padding: 24 }}>404</div>} />
+          </Routes>
+        </ErrorBoundary>
       </BrowserRouter>
     </AuthProvider>
   );

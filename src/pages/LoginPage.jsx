@@ -26,21 +26,34 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{maxWidth:420, margin:'40px auto'}}>
-      <h2>{mode === 'login' ? 'Entrar' : 'Registrar'}</h2>
-      <form onSubmit={onSubmit} style={{display:'grid', gap:10}}>
+    <div className="login-page">
+      <div className='form-group'> <div className="login-header">{mode === 'login' ? 'Entrar' : 'Criar conta'}</div></div>
+      <form onSubmit={onSubmit} >
         {mode === 'register' && (
           <>
+          <div className="form-group">
             <input placeholder="Nome" value={form.name} onChange={e=>setForm({...form, name:e.target.value})} />
-            <select value={form.role} onChange={e=>setForm({...form, role:e.target.value})}>
-              <option value="CUSTOMER">Cliente</option>
-              <option value="SELLER">Vendedor</option>
-            </select>
+          </div>
+          <div className='form-group'>
+              <select value={form.role} onChange={e=>setForm({...form, role:e.target.value})}>
+                <option value="CUSTOMER">Cliente</option>
+                <option value="SELLER">Vendedor</option>
+              </select>
+          </div>
+            
           </>
         )}
-        <input placeholder="E-mail" value={form.email} onChange={e=>setForm({...form, email:e.target.value})} />
-        <input placeholder="Senha" type="password" value={form.password} onChange={e=>setForm({...form, password:e.target.value})} />
-        <button disabled={loading}>{loading ? '...' : 'Enviar'}</button>
+        <div className="form-group">
+            <input placeholder="E-mail" value={form.email} onChange={e=>setForm({...form, email:e.target.value})} />
+        </div>
+        <div className="form-group">
+            <input placeholder="Senha" type="password" value={form.password} onChange={e=>setForm({...form, password:e.target.value})} />
+        </div>
+        <div className='form-group'>
+          <button disabled={loading}>{loading ? '...' : 'Enviar'}</button>
+        </div>
+        
+        
       </form>
       {err && <p style={{color:'tomato'}}>{err}</p>}
       <button style={{marginTop:12}} onClick={()=>setMode(mode==='login'?'register':'login')}>

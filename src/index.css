@@ -24,10 +24,7 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  /* display: flex; */
 }
 
 h1 {
@@ -53,6 +50,129 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+/* Página inteira */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f0f2f5; /* cor clara de fundo */
+  flex-direction: column;
+}
+
+/* O card de login */
+.login-card {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+}
+
+/* Título */
+.login-card h2 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #333;
+}
+
+/* Mensagem de erro */
+.error-msg {
+  margin-bottom: 1rem;
+  color: #d9534f;
+  text-align: center;
+}
+
+/* Form group */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.form-group input {
+  width: 100%;
+  padding: .375rem .75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+
+    font-weight: 400;
+    line-height: 1.5;
+}
+input {
+  width: 100%;
+  padding: .375rem .75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.form-group input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+select {
+  display: block;
+  width: 100%;
+  padding: .375rem 2.25rem .375rem .75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+  box-sizing: border-box;
+}
+
+/* Botão */
+.btn-login {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  background: #007bff;
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-login:hover {
+  background: #0056b3;
+}
+
+/* Rodapé do card */
+.login-footer {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.login-footer a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}
+
 
 @media (prefers-color-scheme: light) {
   :root {

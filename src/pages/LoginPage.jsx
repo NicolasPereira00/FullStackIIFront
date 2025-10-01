@@ -26,26 +26,36 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{maxWidth:420, margin:'40px auto'}}>
-      <h2>{mode === 'login' ? 'Entrar' : 'Registrar'}</h2>
-      <form onSubmit={onSubmit} style={{display:'grid', gap:10}}>
+    <main className='container'>
+    <div className='center-login'>
+      <h2 className='text-center mb-2'>{mode === 'login' ? 'Entrar' : 'Registrar'}</h2>
+      <form className='mfrom' onSubmit={onSubmit} stayle={{display:'grid', gap:10}}>
         {mode === 'register' && (
           <>
-            <input placeholder="Nome" value={form.name} onChange={e=>setForm({...form, name:e.target.value})} />
-            <select value={form.role} onChange={e=>setForm({...form, role:e.target.value})}>
-              <option value="CUSTOMER">Cliente</option>
-              <option value="SELLER">Vendedor</option>
-            </select>
+            <div className='form-group'>
+              <input className='form-control' placeholder="Nome" value={form.name} onChange={e=>setForm({...form, name:e.target.value})} />
+            </div>
+            <div className='form-group'>
+              <select className='form-control' value={form.role} onChange={e=>setForm({...form, role:e.target.value})}>
+                <option value="CUSTOMER">Cliente</option>
+                <option value="SELLER">Vendedor</option>
+              </select>
+            </div>
           </>
         )}
-        <input placeholder="E-mail" value={form.email} onChange={e=>setForm({...form, email:e.target.value})} />
-        <input placeholder="Senha" type="password" value={form.password} onChange={e=>setForm({...form, password:e.target.value})} />
-        <button disabled={loading}>{loading ? '...' : 'Enviar'}</button>
+        <div className='form-group'>
+          <input className='form-control'  placeholder="E-mail" value={form.email} onChange={e=>setForm({...form, email:e.target.value})} />
+        </div>
+        <div className='form-group'>
+          <input className='form-control' placeholder="Senha" type="password" value={form.password} onChange={e=>setForm({...form, password:e.target.value})} />
+        </div>
+        <button className='btn btn-primary' disabled={loading}>{loading ? '...' : 'Entrar'}</button>
       </form>
       {err && <p style={{color:'tomato'}}>{err}</p>}
-      <button style={{marginTop:12}} onClick={()=>setMode(mode==='login'?'register':'login')}>
+      <button className='btn btn-outline' style={{marginTop:12}} onClick={()=>setMode(mode==='login'?'register':'login')}>
         {mode==='login'?'Criar conta':'Já tenho conta'}
       </button>
     </div>
+    </main>
   );
 }

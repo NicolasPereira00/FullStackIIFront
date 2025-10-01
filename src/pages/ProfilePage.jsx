@@ -45,20 +45,26 @@ export default function ProfilePage() {
   if (loading) return <div style={{padding:16}}>Carregando…</div>;
 
   return (
-    <div style={{padding:16, maxWidth:520, display:'grid', gap:12}}>
-      <h2>Meu perfil</h2>
-      {err && <div style={{color:'tomato'}}>{err}</div>}
-      {msg && <div style={{color:'seagreen'}}>{msg}</div>}
+    <main className='container'>
+      <div style={{padding:16, maxWidth:520, display:'grid', gap:12}}>
+        <h2 className='text-center'>Meu perfil</h2>
+        {err && <div style={{color:'tomato'}}>{err}</div>}
+        {msg && <div style={{color:'seagreen'}}>{msg}</div>}
 
-      <form onSubmit={save} style={{display:'grid', gap:8}}>
-        <input placeholder="Nome" value={form.name} onChange={e=>setForm({...form, name:e.target.value})}/>
-        <input placeholder="E-mail" value={form.email} onChange={e=>setForm({...form, email:e.target.value})}/>
-        <button disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</button>
-      </form>
+        <form onSubmit={save} style={{display:'grid', gap:8}}>
+          <div className='form-group'>
+            <input className='form-control' placeholder="Nome" value={form.name} onChange={e=>setForm({...form, name:e.target.value})}/>
+          </div>
+          <div className='form-group'>
+            <input className='form-control' placeholder="E-mail" value={form.email} onChange={e=>setForm({...form, email:e.target.value})}/>
+          </div>
+          <button className='btn btn-primary' disabled={saving}>{saving ? 'Salvando…' : 'Salvar'}</button>
+        </form>
 
-      <div style={{opacity:.8, fontSize:13}}>
-        ID do usuário: {user.id} · Papel: {user.role}
+        <div style={{opacity:.8, fontSize:13}}>
+          ID do usuário: {user.id} · Papel: {user.role}
+        </div>
       </div>
-    </div>
+    </main> 
   );
 }

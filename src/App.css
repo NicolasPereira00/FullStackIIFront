@@ -11,9 +11,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -22,6 +24,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -39,4 +42,161 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.page {
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.page-header {
+  display: grid;
+  gap: 4px;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  border: 1px solid #e9ebf0;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(20, 20, 60, 0.04);
+}
+
+.card-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.grid .col-2 {
+  grid-column: span 2;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  color: #556;
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dfe3ea;
+  border-radius: 10px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+}
+
+.muted {
+  color: #6b7280;
+}
+
+.btn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.btn-primary:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  background: #fff;
+  border-color: #dfe3ea;
+  color: #374151;
+}
+
+.btn-outline:hover {
+  border-color: #cfd5df;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+}
+
+.address-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.address-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.address-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.badge {
+  font-size: 12px;
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid #e0e7ff;
+}
+
+.alert {
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+.alert-error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.alert-ok {
+  background: #dcfce7;
+  color: #14532d;
+}
+
+.empty {
+  text-align: center;
+  padding: 28px 12px;
+  border: 1px dashed #e2e8f0;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.empty-title {
+  font-weight: 700;
+  margin-bottom: 4px;
 }

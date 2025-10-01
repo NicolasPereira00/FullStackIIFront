@@ -1,40 +1,40 @@
 import api from './client';
 
-const CART_KEY = 'cartId';
+const unwrap = (r) => r?.data?.data ?? r?.data ?? null;
 
-export const getCachedCartId = () => localStorage.getItem(CART_KEY);
-export const setCachedCartId = (id) => localStorage.setItem(CART_KEY, String(id));
-export const clearCachedCartId = () => localStorage.removeItem(CART_KEY);
+export const getCachedCartId = () => null;
+export const setCachedCartId = () => {};
+export const clearCachedCartId = () => {};
 
 export const startCart = async (customerId) => {
-  const saved = getCachedCartId();
-  if (saved) {
-    try {
-      await listItems(saved);
-      return { id: Number(saved) };
-    } catch (_) {
-      clearCachedCartId();
+  try {
+    const cart = await api.get('/cart').then(unwrap);
+    return { id: cart.id };
+  } catch (e) {
+    if (e?.response?.status === 404) {
+      const cart = await api.post('/cart/start', { customerId }).then(unwrap);
+      return { id: cart.id };
     }
+    throw e;
   }
-  const c = await api.post('/carts/start', { customerId }).then(r => r.data);
-  setCachedCartId(c.id);
-  return c;
 };
 
-export const listItems = (cartId) =>
-  api.get(`/carts/${cartId}/items`).then(r => r.data);
+export const listItems = async () => {
+  const cart = await api.get('/cart').then(unwrap);
+  return cart?.items ?? [];
+};
 
 export const getItem = (itemId) =>
-  api.get(`/carts/items/${itemId}`).then(r => r.data);
+  api.get(`/cart/items/${itemId}`).then(unwrap);
 
-export const addItem = (cartId, payload) =>
-  api.post(`/carts/${cartId}/items`, payload).then(r => r.data);
+export const addItem = (_cartId, payload) =>
+  api.post('/cart/items', payload).then(unwrap);
 
 export const updateItem = (itemId, payload) =>
-  api.put(`/carts/items/${itemId}`, payload).then(r => r.data);
+  api.put(`/cart/items/${itemId}`, payload).then(unwrap);
 
 export const removeItem = (itemId) =>
-  api.delete(`/carts/items/${itemId}`).then(r => r.data);
+  api.delete(`/cart/items/${itemId}`).then(unwrap);
 
-export const checkout = (cartId, shippingAddressId) =>
-  api.post(`/carts/${cartId}/checkout`, { shippingAddressId }).then(r => r.data);
+export const checkout = (_cartId, shippingAddressId) =>
+  api.post('/cart/checkout', { addressId: shippingAddressId }).then(unwrap);

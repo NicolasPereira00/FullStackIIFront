@@ -1,74 +1,150 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { listCategories, createCategory, updateCategory, deleteCategory } from '../../api/categories';
 
-const empty = { name:'' };
+const empty = { name: '' };
 
 export default function AdminCategoriesPage() {
   const [items, setItems] = useState([]);
   const [q, setQ] = useState('');
   const [form, setForm] = useState(empty);
   const [editing, setEditing] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
 
-async function load() {
-  try {
-    setLoading(true);
-    setErr('');
-   const data = await listCategories(q ? { q } : {});
-   setItems(Array.isArray(data) ? data : data.items || []);
-  } catch(e) {
-    setErr(e?.response?.data?.error || 'Falha ao carregar categorias.');
-   setItems([]);
-  } finally {
-    setLoading(false);
-  }
-}
+  const abortRef = useRef(null);
+  const params = useMemo(() => (q?.trim() ? { q: q.trim() } : {}), [q]);
 
+  async function load(signal) {
+    try {
+      setLoading(true);
+      setErr('');
+      const data = await listCategories(params);
+      if (signal?.aborted) return;
+      setItems(data);
+    } catch (e) {
+      if (signal?.aborted) return;
+      setErr(e?.response?.data?.error || e?.message || 'Falha ao carregar categorias.');
+      setItems([]);
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    const t = setTimeout(load, 300);
-    return () => clearTimeout(t);
-  }, [q]);
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
+    load(ac.signal);
+    return () => ac.abort();
+  }, []);
 
-  async function save(e){
+  useEffect(() => {
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
+
+    const t = setTimeout(() => load(ac.signal), 300);
+    return () => {
+      clearTimeout(t);
+      ac.abort();
+    };
+  }, [params]);
+
+  async function save(e) {
     e.preventDefault();
     try {
-      if (editing) await updateCategory(editing, form);
-      else await createCategory(form);
-      setForm(empty); setEditing(null);
-      await load();
-    } catch(e){ alert(e?.response?.data?.error || 'Falha ao salvar.'); }
+      setErr('');
+      if (!form.name?.trim()) throw new Error('Nome é obrigatório.');
+      if (editing) await updateCategory(editing, { name: form.name.trim() });
+      else await createCategory({ name: form.name.trim() });
+      setForm(empty);
+      setEditing(null);
+
+      abortRef.current?.abort();
+      const ac = new AbortController();
+      abortRef.current = ac;
+      await load(ac.signal);
+    } catch (e) {
+      setErr(e?.response?.data?.error || e?.message || 'Falha ao salvar.');
+    }
   }
 
-  async function del(id){
-    if(!confirm('Excluir categoria?')) return;
-    try { await deleteCategory(id); await load(); } catch(e){ alert(e?.response?.data?.error || 'Falha ao excluir.'); }
+  async function del(id) {
+    if (!confirm('Excluir categoria?')) return;
+    try {
+      setErr('');
+      await deleteCategory(id);
+
+      abortRef.current?.abort();
+      const ac = new AbortController();
+      abortRef.current = ac;
+      await load(ac.signal);
+    } catch (e) {
+      setErr(e?.response?.data?.error || e?.message || 'Falha ao excluir.');
+    }
   }
 
   return (
-    <div style={{padding:16, display:'grid', gap:12}}>
+    <div style={{ padding: 16, display: 'grid', gap: 12 }}>
       <h2>Categorias</h2>
-      <div style={{display:'flex', gap:8}}>
-        <input placeholder="Buscar..." value={q} onChange={e=>setQ(e.target.value)} />
+
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          className="form-control"
+          placeholder="Buscar..."
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          style={{ maxWidth: 300 }}
+        />
       </div>
 
-      <form onSubmit={save} style={{display:'flex', gap:8, alignItems:'center'}}>
-        <input placeholder="Nome da categoria" value={form.name} onChange={e=>setForm({...form, name:e.target.value})}/>
-        <button>{editing ? 'Atualizar' : 'Adicionar'}</button>
-        {editing && <button type="button" onClick={()=>{setEditing(null); setForm(empty);}}>Cancelar</button>}
+      <form onSubmit={save} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <input
+          className="form-control"
+          placeholder="Nome da categoria"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          style={{ maxWidth: 300 }}
+        />
+        <button className="btn btn-primary">{editing ? 'Atualizar' : 'Adicionar'}</button>
+        {editing && (
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() => {
+              setEditing(null);
+              setForm(empty);
+            }}
+          >
+            Cancelar
+          </button>
+        )}
       </form>
 
-      {err && <div style={{color:'tomato'}}>{err}</div>}
+      {err && <div className="alert alert-error">{err}</div>}
       {loading && <div>Carregando…</div>}
 
-      <div style={{display:'grid', gap:8}}>
-        {items.map(c => (
-          <div key={c.id} style={{border:'1px solid #eee', padding:10, borderRadius:8, display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+      <div style={{ display: 'grid', gap: 8 }}>
+        {items.map((c) => (
+          <div
+            key={c.id}
+            className="card"
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+          >
             <div><b>{c.name}</b></div>
-            <div style={{display:'flex', gap:8}}>
-              <button onClick={()=>{ setEditing(c.id); setForm({ name:c.name||'' }); }}>Editar</button>
-              <button onClick={()=>del(c.id)}>Excluir</button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                className="btn btn-outline"
+                onClick={() => {
+                  setEditing(c.id);
+                  setForm({ name: c.name || '' });
+                }}
+              >
+                Editar
+              </button>
+              <button className="btn btn-danger" onClick={() => del(c.id)}>
+                Excluir
+              </button>
             </div>
           </div>
         ))}

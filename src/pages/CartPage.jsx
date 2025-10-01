@@ -1,46 +1,84 @@
 import { useEffect, useMemo, useState } from 'react';
-import { startCart, listItems, updateItem, removeItem, checkout, clearCachedCartId } from '../api/cart';
+import {
+  getMyCart,
+  ensureCart,
+  updateCartItem,
+  removeCartItem,
+  checkoutCart,
+} from '../api/cart.me';
+import { listMyAddresses } from '../api/addresses.me';
 import { useAuth } from '../context/AuthContext';
-import AddressPicker from '../components/AddressPicker';
 
 function currency(n) {
-  return Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  return Number(n || 0).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  });
 }
 
 export default function CartPage() {
   const { user } = useAuth();
+
   const [cart, setCart] = useState(null);
-  const [items, setItems] = useState([]);
+  const [addresses, setAddresses] = useState([]);
   const [addressId, setAddressId] = useState('');
+
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
 
-  useEffect(() => {
-    if (!user?.customerId) return;
-    (async () => {
+  async function loadAll() {
+    try {
+      setLoading(true);
+      setErr('');
+      setMsg('');
+
+      let currentCart = null;
       try {
-        setLoading(true);
-        setErr('');
-        const c = await startCart(user.customerId);
-        setCart(c);
-        const its = await listItems(c.id);
-        setItems(its);
+        currentCart = await getMyCart();
       } catch (e) {
-        setErr(e?.response?.data?.error || 'Falha ao carregar carrinho.');
-      } finally {
-        setLoading(false);
+        if (e?.response?.status === 404) {
+          currentCart = await ensureCart().catch(() => null);
+        } else {
+          throw e;
+        }
       }
-    })();
-  }, [user?.customerId]);
+      setCart(currentCart);
+
+      const as = await listMyAddresses();
+      const list = Array.isArray(as) ? as : [];
+      setAddresses(list);
+      if (list.length && !addressId) setAddressId(String(list[0].id));
+    } catch (e) {
+      setErr(e?.response?.data?.error || e?.message || 'Falha ao carregar dados.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (user) loadAll();
+  }, [user]);
+
+  const items = cart?.items ?? [];
+  const total = useMemo(
+    () =>
+      items.reduce(
+        (acc, it) => acc + Number(it.unitPrice || 0) * Number(it.quantity || 0),
+        0
+      ),
+    [items]
+  );
 
   async function changeQty(it, q) {
     try {
       setActing(true);
+      setErr('');
       const qty = Math.max(1, Number(q) || 1);
-      await updateItem(it.id, { quantity: qty });
-      setItems(await listItems(cart.id));
+      await updateCartItem(it.id, { quantity: qty });
+      const fresh = await getMyCart();
+      setCart(fresh);
     } catch (e) {
       setErr(e?.response?.data?.error || 'Falha ao atualizar quantidade.');
     } finally {
@@ -51,8 +89,10 @@ export default function CartPage() {
   async function removeLine(it) {
     try {
       setActing(true);
-      await removeItem(it.id);
-      setItems(await listItems(cart.id));
+      setErr('');
+      await removeCartItem(it.id);
+      const fresh = await getMyCart();
+      setCart(fresh);
     } catch (e) {
       setErr(e?.response?.data?.error || 'Falha ao remover item.');
     } finally {
@@ -64,27 +104,24 @@ export default function CartPage() {
     try {
       setMsg('');
       setErr('');
-      if (!cart?.id || !addressId) return;
+      if (!items.length) return;
+      if (!addressId) {
+        setErr('Selecione um endereço para entrega.');
+        return;
+      }
       setActing(true);
-      const order = await checkout(cart.id, Number(addressId));
+      const order = await checkoutCart(Number(addressId));
       setMsg(`Pedido #${order.id} criado! Total: ${currency(order.total)}`);
-      setItems([]);
-      clearCachedCartId();
-      setCart(null);
+      await loadAll();
     } catch (e) {
-      setErr(e?.response?.data?.error || 'Erro no checkout');
+      setErr(e?.response?.data?.error || 'Erro no checkout.');
     } finally {
       setActing(false);
     }
   }
 
-  const total = useMemo(
-    () => items.reduce((acc, it) => acc + Number(it.unitPrice) * it.quantity, 0),
-    [items]
-  );
-
-  if (!user?.customerId) {
-    return <div style={{ padding: 16 }}>Faça login como <b>CUSTOMER</b> para ver o carrinho.</div>;
+  if (!user) {
+    return <div style={{ padding: 16 }}>Faça login para ver o carrinho.</div>;
   }
   if (loading) return <div style={{ padding: 16 }}>Carregando…</div>;
 
@@ -105,11 +142,13 @@ export default function CartPage() {
             gap: 12,
             alignItems: 'center',
             padding: '8px 0',
-            borderBottom: '1px solid #eee'
+            borderBottom: '1px solid #eee',
           }}
         >
           <div style={{ flex: 1 }}>
-            <div><strong>{it.product?.name}</strong></div>
+            <div>
+              <strong>{it.product?.name}</strong>
+            </div>
             <div style={{ opacity: 0.7 }}>
               {it.variant ? `${it.variant.size}/${it.variant.color}` : 'Sem variante'}
             </div>
@@ -123,7 +162,9 @@ export default function CartPage() {
             style={{ width: 64 }}
             disabled={acting}
           />
-          <button onClick={() => removeLine(it)} disabled={acting}>Remover</button>
+          <button onClick={() => removeLine(it)} disabled={acting}>
+            Remover
+          </button>
         </div>
       ))}
 
@@ -131,7 +172,29 @@ export default function CartPage() {
         Total: <strong>{currency(total)}</strong>
       </div>
 
-      <AddressPicker customerId={user.customerId} value={addressId} onChange={setAddressId} />
+      <div>
+        <h3 style={{ margin: '8px 0' }}>Endereço de entrega</h3>
+        {!addresses.length ? (
+          <div style={{ opacity: 0.7 }}>Nenhum endereço cadastrado.</div>
+        ) : (
+          <div style={{ display: 'grid', gap: 6 }}>
+            {addresses.map((a) => (
+              <label key={a.id} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input
+                  type="radio"
+                  name="addr"
+                  value={a.id}
+                  checked={String(addressId) === String(a.id)}
+                  onChange={() => setAddressId(String(a.id))}
+                />
+                <span>
+                  {a.street}, {a.number} — {a.city}/{a.state} — {a.zipCode}
+                </span>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div>
         <button onClick={doCheckout} disabled={!items.length || !addressId || acting}>

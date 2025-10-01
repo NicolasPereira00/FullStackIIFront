@@ -31,7 +31,6 @@ export default function AddressPicker({ customerId, value, onChange }) {
   useEffect(() => {
     if (!customerId) return;
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customerId]);
 
   function onField(k, v) {

@@ -6,11 +6,10 @@ export const listProductImages = (productId) =>
 export const uploadProductImage = (productId, file) => {
   const fd = new FormData();
   fd.append('file', file);
-  return api.post(`/products/${productId}/images`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
-    .then(r => r.data);
+  return api.post(`/products/${productId}/images`, fd).then(r => r.data);
 };
 
-export const removeProductImage = (productId, imageId) =>
+export const deleteProductImage = (productId, imageId) =>
   api.delete(`/products/${productId}/images/${imageId}`).then(r => r.data);
 
 export const listVariantImages = (variantId) =>
@@ -19,9 +18,8 @@ export const listVariantImages = (variantId) =>
 export const uploadVariantImage = (variantId, file) => {
   const fd = new FormData();
   fd.append('file', file);
-  return api.post(`/variants/${variantId}/images`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
-    .then(r => r.data);
+  return api.post(`/variants/${variantId}/images`, fd).then(r => r.data);
 };
 
-export const removeVariantImage = (variantId, imageId) =>
+export const deleteVariantImage = (variantId, imageId) =>
   api.delete(`/variants/${variantId}/images/${imageId}`).then(r => r.data);

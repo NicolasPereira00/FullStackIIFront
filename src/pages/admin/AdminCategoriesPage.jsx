@@ -11,18 +11,20 @@ export default function AdminCategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
 
-  async function load() {
-    try {
-      setLoading(true);
-      setErr('');
-      const data = await listCategories(q ? { q } : undefined);
-      setItems(data);
-    } catch(e) {
-      setErr(e?.response?.data?.error || 'Falha ao carregar categorias.');
-    } finally {
-      setLoading(false);
-    }
+async function load() {
+  try {
+    setLoading(true);
+    setErr('');
+   const data = await listCategories(q ? { q } : {});
+   setItems(Array.isArray(data) ? data : data.items || []);
+  } catch(e) {
+    setErr(e?.response?.data?.error || 'Falha ao carregar categorias.');
+   setItems([]);
+  } finally {
+    setLoading(false);
   }
+}
+
 
   useEffect(() => {
     const t = setTimeout(load, 300);

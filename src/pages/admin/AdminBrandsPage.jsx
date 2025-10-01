@@ -12,17 +12,19 @@ export default function AdminBrandsPage() {
   const [err, setErr] = useState('');
 
   async function load() {
-    try {
-      setLoading(true);
-      setErr('');
-      const data = await listBrands(q ? { q } : undefined);
-      setItems(data);
-    } catch(e) {
-      setErr(e?.response?.data?.error || 'Falha ao carregar marcas.');
-    } finally {
-      setLoading(false);
-    }
+  try {
+    setLoading(true);
+    setErr('');
+   const data = await listBrands(q ? { q } : {});
+   setItems(Array.isArray(data) ? data : data.items || []);
+  } catch(e) {
+    setErr(e?.response?.data?.error || 'Falha ao carregar marcas.');
+   setItems([]);
+  } finally {
+    setLoading(false);
   }
+}
+
 
   useEffect(() => {
     const t = setTimeout(load, 300);
